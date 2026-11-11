@@ -225,9 +225,10 @@ export default class GameScene extends Phaser.Scene {
   /* -------------------------------------------------------------- */
 
   update(time, delta) {
-    // Un onglet revenu au premier plan peut livrer un delta énorme : on le
-    // borne pour ne pas téléporter le coureur à travers un obstacle.
-    const dt = Math.min(delta, 1000 / 30);
+    // `delta` est déjà plafonné par Phaser (GAME.minFps) et c'est le même que
+    // celui de la physique : ne pas le reborner ici, sinon le coureur et le
+    // décor n'avanceraient plus sur la même horloge.
+    const dt = delta;
 
     if (!this.running) {
       // Après la collision, le décor s'arrête net mais la chute continue.

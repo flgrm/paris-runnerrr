@@ -17,6 +17,12 @@ export const GAME = {
   /** Limite de densité de pixels prise en compte (évite de rendre en 3x inutilement). */
   maxPixelRatio: 2,
   targetFps: 60,
+  /**
+   * En dessous de ce débit, le jeu ralentit au lieu de sauter du temps. Phaser
+   * plafonne alors le delta qu'il distribue à la physique ET aux scènes : le
+   * coureur et le décor restent sur la même horloge, même pendant un à-coup.
+   */
+  minFps: 30,
   /** Affiche les hitboxes et un compteur de fps (?debug=1 dans l'URL le force aussi). */
   debug: false,
 };

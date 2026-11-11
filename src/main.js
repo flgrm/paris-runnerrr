@@ -33,7 +33,8 @@ const config = {
   },
   fps: {
     target: GAME.targetFps,
-    // Pas de panic sur un pic de charge : on préfère un delta borné (voir GameScene).
+    // Delta plafonné à la source : physique et scènes reçoivent le même temps.
+    min: GAME.minFps,
     forceSetTimeOut: false,
   },
   physics: {
