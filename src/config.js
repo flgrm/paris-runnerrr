@@ -347,6 +347,18 @@ export const UI = {
   fadeDuration: 240,
 };
 
+/**
+ * Statistiques d'utilisation (GoatCounter, sans cookie).
+ * Laisser `goatcounterCode` vide désactive tout : aucun script n'est chargé.
+ */
+export const ANALYTICS = {
+  /** Le « moncode » de https://moncode.goatcounter.com */
+  goatcounterCode: '',
+  scriptUrl: 'https://gc.zgo.at/count.js',
+  /** Bornes des tranches de score remontées en fin de partie. */
+  scoreBuckets: [250, 500, 1000, 2000, 5000],
+};
+
 /** Sauvegarde locale. */
 export const STORAGE = {
   highScoreKey: 'parisRunner.highScore',

@@ -16,6 +16,7 @@ import Parallax from '../systems/parallax.js';
 import ObstacleSpawner from '../systems/obstacleSpawner.js';
 import CoinSpawner from '../systems/coinSpawner.js';
 import { addCoins, getHighScore, submitScore } from '../systems/storage.js';
+import { scoreBucket, track } from '../systems/analytics.js';
 import { label } from '../systems/ui.js';
 
 export default class GameScene extends Phaser.Scene {
@@ -149,6 +150,8 @@ export default class GameScene extends Phaser.Scene {
     this.bestText.setText(this.best > 0 ? `Record ${this.best}` : '');
     this.coinsText.setText('Pièces 0');
     this.scoreText.setText('0');
+
+    track('partie-lancee', 'Partie lancée');
   }
 
   /** Relance une partie sans recréer la scène (rejouer en un tap). */
@@ -172,6 +175,10 @@ export default class GameScene extends Phaser.Scene {
 
     const isRecord = submitScore(this.score);
     addCoins(this.coinCount);
+
+    const bucket = scoreBucket(this.score);
+    track(`fin-de-partie/score-${bucket}`, `Fin de partie — score ${bucket}`);
+    if (isRecord) track('record-battu', 'Record personnel battu');
 
     // Laisse voir la chute avant d'afficher le panneau.
     this.time.delayedCall(650, () => {
