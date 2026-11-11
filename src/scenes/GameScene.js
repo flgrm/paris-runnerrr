@@ -40,9 +40,21 @@ export default class GameScene extends Phaser.Scene {
     this.createHud();
     this.bindControls();
 
-    if (GAME.debug) this.debugGraphics = this.add.graphics().setDepth(900);
+    // Phaser réutilise l'instance de scène d'une partie à l'autre : toute
+    // référence à un Game Object doit être recréée ici, sinon elle pointe sur
+    // un objet détruit au second lancement.
+    this.debugGraphics = null;
+    this.fpsText = null;
+    if (GAME.debug) {
+      this.debugGraphics = this.add.graphics().setDepth(900);
+      this.fpsText = label(this, GAME.width - 24, GAME.height - 24, '', {
+        size: 16, originX: 1, originY: 1, color: '#00ff88',
+      }).setDepth(900);
+    }
 
-    this.events.on(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
+    // `once` et non `on` : create() est rejoué à chaque relance de la scène,
+    // et this.events survit au shutdown — les abonnements s'empileraient.
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
     this.cameras.main.fadeIn(UI.fadeDuration, 0, 0, 0);
 
     this.startRun();
@@ -271,11 +283,6 @@ export default class GameScene extends Phaser.Scene {
       g.strokeRect(rect.x, rect.y, rect.width, rect.height);
     });
 
-    if (!this.fpsText) {
-      this.fpsText = label(this, GAME.width - 24, GAME.height - 24, '', {
-        size: 16, originX: 1, originY: 1, color: '#00ff88',
-      }).setDepth(900);
-    }
     this.fpsText.setText(
       `${Math.round(this.game.loop.actualFps)} fps · ${Math.round(this.speed)} px/s`,
     );
