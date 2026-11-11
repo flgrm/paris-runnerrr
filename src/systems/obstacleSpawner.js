@@ -31,6 +31,8 @@ export default class ObstacleSpawner {
     this.scene = scene;
     this.pool = new Pool(scene, Obstacle, SPAWN.poolSize);
     this.keysBySlot = groupKeysBySlot();
+    /** @type {((obstacle: Obstacle) => void)|null} appelé à chaque apparition */
+    this.onSpawn = null;
     this.reset();
   }
 
@@ -127,7 +129,10 @@ export default class ObstacleSpawner {
       }
 
       const obstacle = this.pool.acquire();
-      if (obstacle) obstacle.spawn(key, startX + time * speed);
+      if (obstacle) {
+        obstacle.spawn(key, startX + time * speed);
+        if (this.onSpawn) this.onSpawn(obstacle);
+      }
 
       cursorTime = time;
       previousDef = def;

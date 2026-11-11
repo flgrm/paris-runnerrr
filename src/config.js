@@ -89,6 +89,13 @@ export const PLAYER = {
   slideFastFallVelocity: 900,
 
   /**
+   * Atterrissage sur les toits (obstacles `landable`). Si les pieds arrivent
+   * jusqu'à cette distance (px) sous le bord du toit, on est quand même posé
+   * dessus : un atterrissage un peu court reste un atterrissage.
+   */
+  landingTolerance: 14,
+
+  /**
    * Animation des placeholders (sera remplacée par les spritesheets).
    * On incline le sprite au lieu de le redimensionner : la hitbox d'Arcade est
    * un AABB qui ignore la rotation, donc le cycle de course ne la fait pas vibrer.
@@ -116,24 +123,30 @@ export const INPUT = {
  * - `slot`      : 'ground' (sol), 'airLow' (aérien bas, à passer en glissade),
  *                 'airHigh' (aérien haut, à passer en restant au sol).
  * - `bottom`    : hauteur du bas de l'obstacle au-dessus du sol (slots aériens).
- * - `avoid`     : esquive attendue, utilisé par les règles d'équité.
+ * - `avoid`     : esquive attendue, utilisé par les règles d'équité :
+ *                 'jump', 'slide', 'stay' (rester au sol) ou 'climb' (obstacle
+ *                 haut sur lequel on monte : demande un saut bien préparé).
  * - `speedMul`  : vitesse propre, en multiple de la vitesse de course.
  * - `minProgress` : difficulté (0 → 1) à partir de laquelle l'obstacle apparaît.
  * - `weight`    : poids dans le tirage aléatoire.
  * - `behaviour` : comportement appliqué chaque frame (voir systems/behaviours.js).
+ * - `landable`  : le dessus est une plateforme. Y atterrir recharge le double
+ *                 saut ; percuter l'obstacle de face arrête toujours la partie.
+ * - `roofCoins` : pièces posées sur le toit (`count`) à `height` px au-dessus.
  */
 export const OBSTACLES = {
   voiture: {
     label: 'Voiture', slot: 'ground', width: 190, height: 80,
     avoid: 'jump', speedMul: 1.35, minProgress: 0, weight: 10,
-    behaviour: 'car',
+    behaviour: 'car', landable: true,
     /** Freinage brusque : probabilité, décélération, durée (ms). */
     brakeChance: 0.35, brakeSpeedMul: 0.55, brakeDuration: 700,
   },
   camionnette: {
     label: 'Camionnette', slot: 'ground', width: 215, height: 95,
     avoid: 'jump', speedMul: 1.2, minProgress: 0.3, weight: 5,
-    behaviour: 'car', brakeChance: 0.25, brakeSpeedMul: 0.6, brakeDuration: 800,
+    behaviour: 'car', landable: true,
+    brakeChance: 0.25, brakeSpeedMul: 0.6, brakeDuration: 800,
   },
   velo: {
     label: 'Vélo', slot: 'ground', width: 90, height: 92,
@@ -192,6 +205,11 @@ export const OBSTACLES = {
     label: 'Barrière', slot: 'ground', width: 124, height: 70,
     avoid: 'jump', speedMul: 1, minProgress: 0.2, weight: 5, behaviour: 'static',
   },
+  abribus: {
+    label: 'Abribus', slot: 'ground', width: 300, height: 135,
+    avoid: 'climb', speedMul: 1, minProgress: 0.1, weight: 5, behaviour: 'static',
+    landable: true, roofCoins: { count: 4, height: 46 },
+  },
   echafaudage: {
     label: 'Échafaudage', slot: 'airLow', width: 150, height: 44, bottom: 64,
     avoid: 'slide', speedMul: 1, minProgress: 0.3, weight: 6, behaviour: 'static',
@@ -229,6 +247,13 @@ export const SPAWN = {
     'slide-slide': 0.6,
     'jump-stay': 0.85,
     'stay-jump': 0.3,
+    // Monter sur un toit : il faut avoir atterri et pouvoir armer un saut complet.
+    'jump-climb': 0.8,
+    'slide-climb': 0.8,
+    'climb-climb': 0.8,
+    // En descendre : le temps de retomber du toit (~0,3 s) avant de devoir glisser.
+    'climb-slide': 0.9,
+    'climb-stay': 0.85,
   },
 
   /** Taille maximale du pool d'obstacles réutilisés (aucune allocation en jeu). */

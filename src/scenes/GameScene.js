@@ -9,7 +9,7 @@
  */
 
 import Phaser from 'phaser';
-import { GAME, RUN, UI, WORLD } from '../config.js';
+import { GAME, PLAYER, RUN, UI, WORLD } from '../config.js';
 import Player from '../entities/Player.js';
 import InputController from '../systems/inputController.js';
 import Parallax from '../systems/parallax.js';
@@ -36,6 +36,19 @@ export default class GameScene extends Phaser.Scene {
 
     this.playerBox = new Phaser.Geom.Rectangle();
     this.isObstacleAt = (rect) => this.rectHitsObstacle(rect);
+
+    // Les obstacles à toit garni (abribus) reçoivent leurs pièces à l'apparition.
+    // Ils avancent à la vitesse du décor, comme les pièces : l'alignement tient.
+    this.obstacles.onSpawn = (obstacle) => {
+      const roofCoins = obstacle.def.roofCoins;
+      if (!roofCoins) return;
+      this.coinField.spawnRow(
+        obstacle.leftEdge,
+        obstacle.rightEdge,
+        obstacle.roofY - roofCoins.height,
+        roofCoins.count,
+      );
+    };
 
     this.createHud();
     this.bindControls();
@@ -185,6 +198,40 @@ export default class GameScene extends Phaser.Scene {
     return blocked;
   }
 
+  /**
+   * Toits : pose le coureur sur un obstacle `landable` s'il arrive par le dessus.
+   *
+   * Test balayé sur la hauteur — les pieds étaient au-dessus du toit à la frame
+   * précédente (à la tolérance près) et l'ont atteint à celle-ci — donc aucun
+   * toit n'est traversé, même en chute rapide. Appelé avant le test de
+   * collision : une fois posé, le coureur est au-dessus de la hitbox et ne
+   * risque plus rien ; arriver de face ne remplit pas la condition et reste
+   * une collision.
+   */
+  resolvePlatforms() {
+    const player = this.player;
+    const body = player.body;
+    let roofY = null;
+
+    if (body.velocity.y >= 0) {
+      const feet = player.feetY;
+      const reach = player.previousFeetY - PLAYER.landingTolerance;
+      this.obstacles.forEachActive((obstacle) => {
+        if (!obstacle.landable) return;
+        if (body.right <= obstacle.leftEdge || body.x >= obstacle.rightEdge) return;
+        const top = obstacle.roofY;
+        if (reach > top || feet < top) return;
+        // Deux toits se chevauchent rarement ; on garde le plus haut.
+        if (roofY === null || top < roofY) roofY = top;
+      });
+    }
+
+    if (roofY === null) player.leavePlatform();
+    else player.standOn(roofY);
+
+    player.previousFeetY = player.feetY;
+  }
+
   checkObstacleCollisions() {
     const playerBox = this.player.getHitbox(this.playerBox);
     let hit = false;
@@ -257,6 +304,7 @@ export default class GameScene extends Phaser.Scene {
       this.scoreText.setText(String(this.score));
     }
 
+    this.resolvePlatforms();
     this.checkCoinCollisions();
     this.checkObstacleCollisions();
     this.drawDebug();
@@ -272,10 +320,15 @@ export default class GameScene extends Phaser.Scene {
     const box = this.player.getHitbox(this.playerBox);
     g.strokeRect(box.x, box.y, box.width, box.height);
 
-    g.lineStyle(1, 0xff5544, 0.9);
     this.obstacles.forEachActive((obstacle) => {
+      g.lineStyle(1, 0xff5544, 0.9);
       const rect = obstacle.getHitbox();
       g.strokeRect(rect.x, rect.y, rect.width, rect.height);
+      if (obstacle.landable) {
+        // Toit sur lequel on peut atterrir
+        g.lineStyle(3, 0x44aaff, 0.95);
+        g.lineBetween(obstacle.leftEdge, obstacle.roofY, obstacle.rightEdge, obstacle.roofY);
+      }
     });
 
     g.lineStyle(1, 0xffdd44, 0.8);
