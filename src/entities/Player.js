@@ -75,6 +75,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.height - bodyHeight / this.scaleY,
     );
     this.body.updateFromGameObject();
+    // En fin de frame, Arcade reporte sur le sprite l'écart (position − prevFrame).
+    // Changer de hitbox déplace le haut du corps sans que le coureur ait bougé :
+    // on réaligne prevFrame, sinon ce faux déplacement soulève le sprite (un
+    // bond parasite à chaque fin de glissade).
+    this.body.prev.copy(this.body.position);
+    this.body.prevFrame.copy(this.body.position);
   }
 
   get grounded() {
