@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#0e1420" />
+  <meta name="description" content="Paris Runner — endless runner dans les rues de Paris." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Paris Runner</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0e1420;
+      color: #e8e2d6;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      /* Pas de surlignage ni de zoom au double-tap sur mobile */
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+
+    #game {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game canvas { display: block; }
+
+    /* Message d'orientation : smartphone en portrait */
+    #orientation {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 32px;
+      text-align: center;
+      background: #0e1420;
+    }
+
+    #orientation .frame {
+      width: 76px;
+      height: 124px;
+      border: 3px solid #8c8577;
+      border-radius: 10px;
+      animation: tilt 2.2s ease-in-out infinite;
+    }
+
+    #orientation p { font-size: 18px; line-height: 1.6; color: #c9c2b4; max-width: 24ch; }
+
+    @keyframes tilt {
+      0%, 35% { transform: rotate(0deg); }
+      65%, 100% { transform: rotate(-90deg); }
+    }
+
+    /* Affiché seulement sur écran tactile tenu en portrait */
+    @media (orientation: portrait) and (hover: none) and (pointer: coarse) {
+      #orientation { display: flex; }
+      #game { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+
+  <div id="orientation" aria-hidden="true">
+    <div class="frame"></div>
+    <p>Tournez votre téléphone pour jouer en paysage.</p>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
