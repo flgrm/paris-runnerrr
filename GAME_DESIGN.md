@@ -43,6 +43,7 @@ Un endless runner dans les rues de Paris. Le joueur court sur les pavés et esqu
 ### Collisions
 - Hitboxes plus petites que les sprites (environ 80 %) pour un ressenti juste.
 - Une collision avec un obstacle = game over (v1). Système de vies ou de bouclier possible plus tard.
+- Exception, les toits : on peut atterrir sur le dessus des voitures, des camionnettes et des abribus en arrivant par le haut. Y atterrir recharge le double saut. Les percuter de face reste un game over.
 
 ### Pièces
 - Pièces dorées animées, placées en lignes ou en arcs qui suivent les trajectoires de saut.
@@ -58,13 +59,14 @@ Chaque obstacle a un comportement propre. La variété des comportements compte 
 
 | Obstacle | Position | Comportement | Esquive |
 |---|---|---|---|
-| Voiture | Sol | Arrive plus vite que le décor, peut freiner brusquement | Saut / double saut |
+| Voiture | Sol | Arrive plus vite que le décor, peut freiner brusquement | Saut / double saut, ou atterrir sur le toit |
 | Vélo | Sol | Rapide, trajectoire droite | Saut |
 | Trottinette électrique | Sol | Accélérations irrégulières | Saut |
 | Piéton | Sol | Marche erratique, peut s'arrêter ou changer de sens | Saut |
 | Pigeon | Air bas ou air haut (2 hauteurs) | S'envole au passage, battements d'ailes | Glissade (bas) / rester au sol (haut) |
 | Rat | Sol, petit | Traverse rapidement | Petit saut |
 | Mobilier urbain | Sol, fixe | Bancs, potelets, poubelles, colonnes Morris, barrières | Saut ou glissade selon la hauteur |
+| Abribus | Sol, fixe, haut et long | Plateforme : des pièces sont posées sur le toit | Monter dessus (saut) ou le franchir en double saut |
 | Échafaudage / auvent | Aérien, fixe | Barre horizontale | Glissade |
 
 ### Génération
@@ -143,6 +145,10 @@ paris-runner/
 ├── reference/          # ancien prototype, lecture seule
 └── .github/workflows/
 ```
+
+### Statistiques d'utilisation
+- GoatCounter, sans cookie ni identifiant de visiteur : pages vues et événements anonymes (partie lancée, fin de partie par tranche de score, record battu).
+- Désactivé en local, en mode debug, et tant qu'aucun code de site n'est renseigné dans `src/config.js`.
 
 ## 10. Hors périmètre v1
 

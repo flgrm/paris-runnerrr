@@ -10,9 +10,11 @@ Cahier des charges : [GAME_DESIGN.md](GAME_DESIGN.md) · Règles de contribution
 avec des **placeholders gris** à la place des visuels définitifs.
 
 En place : scènes Boot / Menu / Jeu / Pause / Game over, parallaxe à sept
-couches, saut, saut à hauteur variable, double saut, glissade, quinze types
-d'obstacles avec comportements propres, pièces en lignes et en arcs, record
-sauvegardé localement, déploiement automatique sur GitHub Pages.
+couches, saut, saut à hauteur variable, double saut, glissade, seize types
+d'obstacles avec comportements propres, toits sur lesquels on peut atterrir
+(voitures, camionnettes, abribus), pièces en lignes et en arcs, record
+sauvegardé localement, statistiques anonymes optionnelles, déploiement
+automatique sur GitHub Pages.
 
 ## Développement
 
@@ -68,6 +70,22 @@ Phase 2 : il suffira de remplir le tableau `ASSETS` de `src/scenes/BootScene.js`
 Les placeholders ne sont générés que pour les clés absentes, donc une texture
 chargée remplace automatiquement la sienne — couche par couche, sans toucher au
 gameplay.
+
+## Statistiques
+
+Le jeu peut envoyer des statistiques anonymes à [GoatCounter](https://www.goatcounter.com)
+(sans cookie) : pages vues, parties lancées, fins de partie par tranche de
+score, records battus.
+
+Pour les activer, créez un site sur GoatCounter puis renseignez son code dans
+`src/config.js` :
+
+```js
+export const ANALYTICS = {
+  goatcounterCode: 'moncode', // pour https://moncode.goatcounter.com
+```
+
+Rien n'est chargé tant que ce champ est vide, ni en local, ni avec `?debug=1`.
 
 ## Déploiement
 
