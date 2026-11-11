@@ -68,7 +68,7 @@ export default class GameScene extends Phaser.Scene {
     const margin = UI.hud.margin;
 
     this.scoreLabel = label(this, margin, margin, 'SCORE', {
-      size: UI.hud.labelSize, color: UI.colors.textDim, originX: 0, originY: 0,
+      size: UI.hud.labelSize, color: UI.colors.text, originX: 0, originY: 0,
     });
     this.scoreText = label(this, margin, margin + 20, '0', {
       size: UI.hud.fontSize, bold: true, originX: 0, originY: 0,
@@ -79,7 +79,7 @@ export default class GameScene extends Phaser.Scene {
     });
 
     this.bestText = label(this, GAME.width / 2, margin + 4, '', {
-      size: UI.hud.labelSize, color: UI.colors.textDim, originX: 0.5, originY: 0,
+      size: UI.hud.labelSize, color: UI.colors.text, originX: 0.5, originY: 0,
     });
 
     // Bouton pause : large, en haut à droite, atteignable au pouce.

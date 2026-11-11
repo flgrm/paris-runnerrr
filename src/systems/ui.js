@@ -22,7 +22,7 @@ export function label(scene, x, y, text, options = {}) {
   // Ombre portée : le HUD doit rester lisible sur un ciel clair comme sur
   // l'asphalte sombre, sans cadre opaque qui mangerait l'écran du téléphone.
   if (options.shadow !== false) {
-    item.setShadow(0, 2, 'rgba(0,0,0,0.75)', 4, false, true);
+    item.setShadow(0, 2, 'rgba(0,0,0,0.85)', 6, false, true);
   }
   return item;
 }
