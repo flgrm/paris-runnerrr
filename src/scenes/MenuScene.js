@@ -7,6 +7,7 @@
 import Phaser from 'phaser';
 import { GAME, RUN, UI } from '../config.js';
 import Parallax from '../systems/parallax.js';
+import { enterImmersiveMode } from '../systems/pwa.js';
 import { getHighScore } from '../systems/storage.js';
 import { button, controlsHint, label, panel } from '../systems/ui.js';
 
@@ -55,6 +56,8 @@ export default class MenuScene extends Phaser.Scene {
   startGame() {
     if (this.starting) return;
     this.starting = true;
+    // Tant qu'on tient le geste du joueur : plein écran paysage sur mobile.
+    enterImmersiveMode(this);
     this.cameras.main.fadeOut(UI.fadeDuration, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Game'));
   }

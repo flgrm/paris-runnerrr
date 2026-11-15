@@ -25,6 +25,9 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: GAME.width,
     height: GAME.height,
+    // En plein écran, c'est le conteneur existant qui s'agrandit : le canvas
+    // garde son centrage et sa mise à l'échelle.
+    fullscreenTarget: 'game',
   },
   // Rendu net sur Retina, sans aller jusqu'à 3x (coût GPU inutile sur mobile).
   resolution: Math.min(window.devicePixelRatio || 1, GAME.maxPixelRatio),
