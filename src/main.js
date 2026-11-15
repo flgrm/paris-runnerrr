@@ -14,6 +14,7 @@ import GameScene from './scenes/GameScene.js';
 import PauseScene from './scenes/PauseScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
 import { initAnalytics } from './systems/analytics.js';
+import { registerServiceWorker } from './systems/pwa.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -24,6 +25,9 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: GAME.width,
     height: GAME.height,
+    // En plein écran, c'est le conteneur existant qui s'agrandit : le canvas
+    // garde son centrage et sa mise à l'échelle.
+    fullscreenTarget: 'game',
   },
   // Rendu net sur Retina, sans aller jusqu'à 3x (coût GPU inutile sur mobile).
   resolution: Math.min(window.devicePixelRatio || 1, GAME.maxPixelRatio),
@@ -57,6 +61,9 @@ const game = new Phaser.Game(config);
 
 // Sans effet tant qu'aucun code GoatCounter n'est renseigné dans config.js.
 initAnalytics();
+
+// Cache hors ligne (build de production uniquement).
+registerServiceWorker();
 
 // En mode debug uniquement : l'instance est exposée pour l'inspection manuelle
 // et les tests automatisés de rendu mobile.

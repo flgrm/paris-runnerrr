@@ -7,7 +7,8 @@ Cahier des charges : [GAME_DESIGN.md](GAME_DESIGN.md) · Règles de contribution
 ## État
 
 Étapes 1 et 2 de la feuille de route : socle technique et gameplay complet,
-avec des **placeholders gris** à la place des visuels définitifs.
+avec des **placeholders gris** à la place des visuels définitifs, et étape 3 :
+jeu installable (PWA), jouable hors ligne.
 
 En place : scènes Boot / Menu / Jeu / Pause / Game over, parallaxe à sept
 couches, saut, saut à hauteur variable, double saut, glissade, seize types
@@ -55,6 +56,8 @@ src/
 ├── entities/            Player, Obstacle, Coin
 └── systems/             parallaxe, spawners, pool, comportements,
                          commandes, placeholders, sauvegarde, UI
+public/                  manifest et icônes de la PWA
+tools/                   génération du service worker et des icônes
 reference/               ancien prototype, en lecture seule
 ```
 
@@ -70,6 +73,29 @@ Phase 2 : il suffira de remplir le tableau `ASSETS` de `src/scenes/BootScene.js`
 Les placeholders ne sont générés que pour les clés absentes, donc une texture
 chargée remplace automatiquement la sienne — couche par couche, sans toucher au
 gameplay.
+
+## Installation sur téléphone (PWA)
+
+Le jeu s'installe sur l'écran d'accueil et se lance alors en plein écran, en
+paysage, y compris hors ligne.
+
+- **Android (Chrome)** : menu ⋮ → « Installer l'application » ou « Ajouter à
+  l'écran d'accueil ».
+- **iPhone (Safari)** : bouton Partager → « Sur l'écran d'accueil ». C'est le
+  seul moyen d'avoir le plein écran sur iPhone : Safari ne l'accorde pas à une
+  simple page web.
+
+Sans installation, sur Android, « Jouer » passe quand même en plein écran
+paysage (`MOBILE.fullscreenOnPlay` dans `src/config.js`).
+
+Le service worker (`src/serviceWorker.template.js`, généré dans `dist/sw.js`
+par `tools/serviceWorkerPlugin.js`) met tout le build en cache à la première
+visite. Après un déploiement, la nouvelle version remplace l'ancienne à
+l'ouverture suivante, sans action du joueur. Il n'est actif que sur le build
+de production, jamais avec `npm run dev`.
+
+Les icônes de `public/icons/` sont provisoires ; elles se régénèrent avec
+`python3 tools/generate-icons.py`.
 
 ## Statistiques
 
