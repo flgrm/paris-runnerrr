@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import serviceWorkerPlugin from './tools/serviceWorkerPlugin.js';
 
 /**
  * `base` doit correspondre au nom du dépôt pour GitHub Pages
@@ -13,6 +14,7 @@ import { defineConfig } from 'vite';
  */
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/paris-runnerrr/' : '/',
+  plugins: [serviceWorkerPlugin()],
   server: {
     host: true,
     port: 5173,

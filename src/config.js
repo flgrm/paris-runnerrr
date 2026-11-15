@@ -347,6 +347,15 @@ export const UI = {
   fadeDuration: 240,
 };
 
+/** Confort mobile. */
+export const MOBILE = {
+  /**
+   * Sur téléphone, dans le navigateur, « Jouer » passe en plein écran paysage
+   * (là où c'est possible). Sans effet une fois le jeu installé.
+   */
+  fullscreenOnPlay: true,
+};
+
 /**
  * Statistiques d'utilisation (GoatCounter, sans cookie).
  * Laisser `goatcounterCode` vide désactive tout : aucun script n'est chargé.

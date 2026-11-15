@@ -14,6 +14,7 @@ import GameScene from './scenes/GameScene.js';
 import PauseScene from './scenes/PauseScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
 import { initAnalytics } from './systems/analytics.js';
+import { registerServiceWorker } from './systems/pwa.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -57,6 +58,9 @@ const game = new Phaser.Game(config);
 
 // Sans effet tant qu'aucun code GoatCounter n'est renseigné dans config.js.
 initAnalytics();
+
+// Cache hors ligne (build de production uniquement).
+registerServiceWorker();
 
 // En mode debug uniquement : l'instance est exposée pour l'inspection manuelle
 // et les tests automatisés de rendu mobile.
