@@ -9,13 +9,14 @@
  */
 
 import Phaser from 'phaser';
-import { GAME, RUN, UI, WORLD } from '../config.js';
+import { GAME, PLAYER, RUN, UI, WORLD } from '../config.js';
 import Player from '../entities/Player.js';
 import InputController from '../systems/inputController.js';
 import Parallax from '../systems/parallax.js';
 import ObstacleSpawner from '../systems/obstacleSpawner.js';
 import CoinSpawner from '../systems/coinSpawner.js';
 import { addCoins, getHighScore, submitScore } from '../systems/storage.js';
+import { scoreBucket, track } from '../systems/analytics.js';
 import { label } from '../systems/ui.js';
 
 export default class GameScene extends Phaser.Scene {
@@ -37,12 +38,37 @@ export default class GameScene extends Phaser.Scene {
     this.playerBox = new Phaser.Geom.Rectangle();
     this.isObstacleAt = (rect) => this.rectHitsObstacle(rect);
 
+    // Les obstacles à toit garni (abribus) reçoivent leurs pièces à l'apparition.
+    // Ils avancent à la vitesse du décor, comme les pièces : l'alignement tient.
+    this.obstacles.onSpawn = (obstacle) => {
+      const roofCoins = obstacle.def.roofCoins;
+      if (!roofCoins) return;
+      this.coinField.spawnRow(
+        obstacle.leftEdge,
+        obstacle.rightEdge,
+        obstacle.roofY - roofCoins.height,
+        roofCoins.count,
+      );
+    };
+
     this.createHud();
     this.bindControls();
 
-    if (GAME.debug) this.debugGraphics = this.add.graphics().setDepth(900);
+    // Phaser réutilise l'instance de scène d'une partie à l'autre : toute
+    // référence à un Game Object doit être recréée ici, sinon elle pointe sur
+    // un objet détruit au second lancement.
+    this.debugGraphics = null;
+    this.fpsText = null;
+    if (GAME.debug) {
+      this.debugGraphics = this.add.graphics().setDepth(900);
+      this.fpsText = label(this, GAME.width - 24, GAME.height - 24, '', {
+        size: 16, originX: 1, originY: 1, color: '#00ff88',
+      }).setDepth(900);
+    }
 
-    this.events.on(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
+    // `once` et non `on` : create() est rejoué à chaque relance de la scène,
+    // et this.events survit au shutdown — les abonnements s'empileraient.
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
     this.cameras.main.fadeIn(UI.fadeDuration, 0, 0, 0);
 
     this.startRun();
@@ -124,6 +150,8 @@ export default class GameScene extends Phaser.Scene {
     this.bestText.setText(this.best > 0 ? `Record ${this.best}` : '');
     this.coinsText.setText('Pièces 0');
     this.scoreText.setText('0');
+
+    track('partie-lancee', 'Partie lancée');
   }
 
   /** Relance une partie sans recréer la scène (rejouer en un tap). */
@@ -148,6 +176,10 @@ export default class GameScene extends Phaser.Scene {
     const isRecord = submitScore(this.score);
     addCoins(this.coinCount);
 
+    const bucket = scoreBucket(this.score);
+    track(`fin-de-partie/score-${bucket}`, `Fin de partie — score ${bucket}`);
+    if (isRecord) track('record-battu', 'Record personnel battu');
+
     // Laisse voir la chute avant d'afficher le panneau.
     this.time.delayedCall(650, () => {
       this.scene.launch('GameOver', {
@@ -171,6 +203,40 @@ export default class GameScene extends Phaser.Scene {
       if (Phaser.Geom.Intersects.RectangleToRectangle(rect, obstacle.getHitbox())) blocked = true;
     });
     return blocked;
+  }
+
+  /**
+   * Toits : pose le coureur sur un obstacle `landable` s'il arrive par le dessus.
+   *
+   * Test balayé sur la hauteur — les pieds étaient au-dessus du toit à la frame
+   * précédente (à la tolérance près) et l'ont atteint à celle-ci — donc aucun
+   * toit n'est traversé, même en chute rapide. Appelé avant le test de
+   * collision : une fois posé, le coureur est au-dessus de la hitbox et ne
+   * risque plus rien ; arriver de face ne remplit pas la condition et reste
+   * une collision.
+   */
+  resolvePlatforms() {
+    const player = this.player;
+    const body = player.body;
+    let roofY = null;
+
+    if (body.velocity.y >= 0) {
+      const feet = player.feetY;
+      const reach = player.previousFeetY - PLAYER.landingTolerance;
+      this.obstacles.forEachActive((obstacle) => {
+        if (!obstacle.landable) return;
+        if (body.right <= obstacle.leftEdge || body.x >= obstacle.rightEdge) return;
+        const top = obstacle.roofY;
+        if (reach > top || feet < top) return;
+        // Deux toits se chevauchent rarement ; on garde le plus haut.
+        if (roofY === null || top < roofY) roofY = top;
+      });
+    }
+
+    if (roofY === null) player.leavePlatform();
+    else player.standOn(roofY);
+
+    player.previousFeetY = player.feetY;
   }
 
   checkObstacleCollisions() {
@@ -213,9 +279,10 @@ export default class GameScene extends Phaser.Scene {
   /* -------------------------------------------------------------- */
 
   update(time, delta) {
-    // Un onglet revenu au premier plan peut livrer un delta énorme : on le
-    // borne pour ne pas téléporter le coureur à travers un obstacle.
-    const dt = Math.min(delta, 1000 / 30);
+    // `delta` est déjà plafonné par Phaser (GAME.minFps) et c'est le même que
+    // celui de la physique : ne pas le reborner ici, sinon le coureur et le
+    // décor n'avanceraient plus sur la même horloge.
+    const dt = delta;
 
     if (!this.running) {
       // Après la collision, le décor s'arrête net mais la chute continue.
@@ -244,6 +311,7 @@ export default class GameScene extends Phaser.Scene {
       this.scoreText.setText(String(this.score));
     }
 
+    this.resolvePlatforms();
     this.checkCoinCollisions();
     this.checkObstacleCollisions();
     this.drawDebug();
@@ -259,10 +327,15 @@ export default class GameScene extends Phaser.Scene {
     const box = this.player.getHitbox(this.playerBox);
     g.strokeRect(box.x, box.y, box.width, box.height);
 
-    g.lineStyle(1, 0xff5544, 0.9);
     this.obstacles.forEachActive((obstacle) => {
+      g.lineStyle(1, 0xff5544, 0.9);
       const rect = obstacle.getHitbox();
       g.strokeRect(rect.x, rect.y, rect.width, rect.height);
+      if (obstacle.landable) {
+        // Toit sur lequel on peut atterrir
+        g.lineStyle(3, 0x44aaff, 0.95);
+        g.lineBetween(obstacle.leftEdge, obstacle.roofY, obstacle.rightEdge, obstacle.roofY);
+      }
     });
 
     g.lineStyle(1, 0xffdd44, 0.8);
@@ -271,11 +344,6 @@ export default class GameScene extends Phaser.Scene {
       g.strokeRect(rect.x, rect.y, rect.width, rect.height);
     });
 
-    if (!this.fpsText) {
-      this.fpsText = label(this, GAME.width - 24, GAME.height - 24, '', {
-        size: 16, originX: 1, originY: 1, color: '#00ff88',
-      }).setDepth(900);
-    }
     this.fpsText.setText(
       `${Math.round(this.game.loop.actualFps)} fps · ${Math.round(this.speed)} px/s`,
     );

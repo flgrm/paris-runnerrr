@@ -63,6 +63,18 @@ export default class CoinSpawner {
     this.distanceToNext = count * step + gapTime * jitter * speed;
   }
 
+  /**
+   * Rangée de pièces régulièrement espacées entre deux abscisses, à hauteur
+   * fixe : sert à garnir le toit d'un obstacle sur lequel on peut atterrir.
+   */
+  spawnRow(leftX, rightX, y, count) {
+    const step = (rightX - leftX) / (count + 1);
+    for (let i = 1; i <= count; i += 1) {
+      const coin = this.pool.acquire();
+      if (coin) coin.spawn(leftX + i * step, y);
+    }
+  }
+
   update(delta, speed, progress, isBlocked) {
     this.pool.forEachActive((coin) => {
       coin.update(delta, speed);

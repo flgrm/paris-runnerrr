@@ -44,6 +44,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.jumpBufferTimer = 0;
     this.runTime = 0;
     this.alive = true;
+    /** Posé sur un toit ? Mis à jour chaque frame par GameScene. */
+    this.onPlatform = false;
+    /** Hauteur des pieds à la frame précédente, pour détecter le franchissement d'un toit. */
+    this.previousFeetY = WORLD.groundY;
 
     this.applyPose('run');
   }
@@ -75,10 +79,36 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.height - bodyHeight / this.scaleY,
     );
     this.body.updateFromGameObject();
+    // En fin de frame, Arcade reporte sur le sprite l'écart (position − prevFrame).
+    // Changer de hitbox déplace le haut du corps sans que le coureur ait bougé :
+    // on réaligne prevFrame, sinon ce faux déplacement soulève le sprite (un
+    // bond parasite à chaque fin de glissade).
+    this.body.prev.copy(this.body.position);
+    this.body.prevFrame.copy(this.body.position);
   }
 
   get grounded() {
-    return this.body.blocked.down || this.body.touching.down;
+    return this.onPlatform || this.body.blocked.down || this.body.touching.down;
+  }
+
+  /** Hauteur (y monde) des pieds. */
+  get feetY() {
+    return this.body.y + this.body.height;
+  }
+
+  /**
+   * Pose le coureur sur un toit. On ne déplace que le corps physique : Arcade
+   * reporte l'écart sur le sprite en fin de frame, donc hitbox et affichage
+   * restent synchronisés.
+   */
+  standOn(roofY) {
+    this.body.y = roofY - this.body.height;
+    this.body.velocity.y = 0;
+    this.onPlatform = true;
+  }
+
+  leavePlatform() {
+    this.onPlatform = false;
   }
 
   /** Rectangle de collision courant, en coordonnées monde. */
@@ -208,6 +238,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   /** Chute au game over. */
   die() {
     this.alive = false;
+    this.onPlatform = false;
     if (this.sliding) this.endSlide();
     this.setVelocity(-120, -420);
     this.body.setAllowGravity(true);
@@ -231,6 +262,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.coyoteTimer = 0;
     this.jumpBufferTimer = 0;
     this.runTime = 0;
+    this.onPlatform = false;
+    this.previousFeetY = WORLD.groundY;
     this.setAngle(0);
     this.setPosition(PLAYER.x, WORLD.groundY);
     this.setVelocity(0, 0);

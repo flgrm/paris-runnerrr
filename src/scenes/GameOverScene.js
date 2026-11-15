@@ -2,7 +2,7 @@
  * Game over (GAME_DESIGN.md §7.5) : score, record, rejouer en un tap.
  *
  * Overlay posé au-dessus de la scène de jeu figée : on voit où on s'est fait
- * renverser, et « Rejouer » relance la partie sans recharger la scène.
+ * arrêté, et « Rejouer » relance la partie sans recharger la scène.
  */
 
 import Phaser from 'phaser';
@@ -33,8 +33,8 @@ export default class GameOverScene extends Phaser.Scene {
     this.add.rectangle(0, 0, GAME.width, GAME.height, 0x05070c, 0.62).setOrigin(0, 0);
     const board = panel(this, 600, 400, centerY - 10);
 
-    label(this, centerX, centerY - 160, 'RENVERSÉ', {
-      size: 46, bold: true, color: UI.colors.stone,
+    label(this, centerX, centerY - 160, 'OUPS', {
+      size: 50, bold: true, color: UI.colors.stone,
     });
 
     if (isRecord) {

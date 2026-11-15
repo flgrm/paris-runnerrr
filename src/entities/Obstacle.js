@@ -57,6 +57,20 @@ export default class Obstacle extends Phaser.GameObjects.Sprite {
     return this.x + this.def.width / 2;
   }
 
+  get leftEdge() {
+    return this.x - this.def.width / 2;
+  }
+
+  /** Le dessus sert-il de plateforme ? */
+  get landable() {
+    return this.def.landable === true;
+  }
+
+  /** Hauteur (y monde) du toit : le bord visuel du sprite, pas la hitbox réduite. */
+  get roofY() {
+    return this.y - this.def.height;
+  }
+
   /** Rectangle de collision : ~80 % du sprite (GAME_DESIGN.md §4). */
   getHitbox() {
     const def = this.def;

@@ -13,6 +13,7 @@ import MenuScene from './scenes/MenuScene.js';
 import GameScene from './scenes/GameScene.js';
 import PauseScene from './scenes/PauseScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
+import { initAnalytics } from './systems/analytics.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -33,7 +34,8 @@ const config = {
   },
   fps: {
     target: GAME.targetFps,
-    // Pas de panic sur un pic de charge : on préfère un delta borné (voir GameScene).
+    // Delta plafonné à la source : physique et scènes reçoivent le même temps.
+    min: GAME.minFps,
     forceSetTimeOut: false,
   },
   physics: {
@@ -52,6 +54,9 @@ if (new URLSearchParams(window.location.search).has('debug')) {
 }
 
 const game = new Phaser.Game(config);
+
+// Sans effet tant qu'aucun code GoatCounter n'est renseigné dans config.js.
+initAnalytics();
 
 // En mode debug uniquement : l'instance est exposée pour l'inspection manuelle
 // et les tests automatisés de rendu mobile.
