@@ -156,8 +156,8 @@ Classement en ligne, comptes utilisateurs, boutique, publicité, multijoueur, ni
 
 ## 11. Feuille de route
 
-- [ ] **Étape 1** : socle technique (Vite, Phaser, scènes, déploiement Pages)
-- [ ] **Étape 2** : gameplay complet avec placeholders, testé sur mobile
+- [x] **Étape 1** : socle technique (Vite, Phaser, scènes, déploiement Pages)
+- [x] **Étape 2** : gameplay complet avec placeholders, testé sur mobile
 - [ ] **Étape 3** : PWA et finitions mobiles
 - [ ] **Étape 4** : visuels définitifs, couche par couche (ciel → monuments → immeubles → rue → personnage → obstacles)
 - [ ] **Étape 5** : équilibrage et polish (effets, transitions, feedbacks)
