@@ -362,7 +362,7 @@ export const MOBILE = {
  */
 export const ANALYTICS = {
   /** Le « moncode » de https://moncode.goatcounter.com */
-  goatcounterCode: '',
+  goatcounterCode: 'parisrunner',
   scriptUrl: 'https://gc.zgo.at/count.js',
   /** Bornes des tranches de score remontées en fin de partie. */
   scoreBuckets: [250, 500, 1000, 2000, 5000],
